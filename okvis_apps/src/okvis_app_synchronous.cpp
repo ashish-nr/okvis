@@ -70,8 +70,8 @@ class PoseViewer
 
   // Create csv file to write pose data
   std::ofstream myfile;
-  myfile.open ("pose_out.csv", std::ofstream::out);
-  myfile << " p_RS_R_x [m],p_RS_R_y [m],p_RS_R_z [m],q_RS_w [],q_RS_x [], q_RS_y [], q_RS_z [],\n";
+  bool iter1_flag=true;
+
 
   PoseViewer()
   {
@@ -91,6 +91,12 @@ class PoseViewer
     Eigen::Vector3d r = T_WS.r();
     Eigen::Matrix3d C = T_WS.C();
 
+    if(iter1_flag)
+    {
+        this->myfile.open("pose_out.csv");
+        this->myfile << " p_RS_R_x [m],p_RS_R_y [m],p_RS_R_z [m],q_RS_w [],q_RS_x [], q_RS_y [], q_RS_z [],\n";
+        iter1_flag = false;
+    }
     // Write pose per timestamp/iteration
     Eigen::Quaterniond quat = T_WS.q();
     this->myfile << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
