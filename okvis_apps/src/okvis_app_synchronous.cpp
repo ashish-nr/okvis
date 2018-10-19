@@ -44,6 +44,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <ostream>
 #include <stdlib.h>
 #include <memory>
 #include <functional>
@@ -66,6 +67,12 @@ class PoseViewer
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   constexpr static const double imageSize = 500.0;
+
+  // Create csv file to write pose data
+  std::ofstream myfile;
+  myfile.open ("pose_out.csv", std::ofstream::out);
+  myfile << " p_RS_R_x [m],p_RS_R_y [m],p_RS_R_z [m],q_RS_w [],q_RS_x [], q_RS_y [], q_RS_z [],\n";
+
   PoseViewer()
   {
     cv::namedWindow("OKVIS Top View");
@@ -83,6 +90,13 @@ class PoseViewer
     // just append the path
     Eigen::Vector3d r = T_WS.r();
     Eigen::Matrix3d C = T_WS.C();
+
+    // Write pose per timestamp/iteration
+    Eigen::Quaterniond quat = T_WS.q();
+    this->myfile << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
+                 << "," << quat.x() << "," << quat.y() << "," << quat.z()
+                 << "," << "\n";
+
     _path.push_back(cv::Point2d(r[0], r[1]));
     _heights.push_back(r[2]);
     // maintain scaling
