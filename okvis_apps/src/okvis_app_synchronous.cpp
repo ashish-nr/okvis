@@ -4,7 +4,7 @@
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -34,7 +34,7 @@
 /**
  * @file okvis_app_synchronous.cpp
  * @brief This file processes a dataset.
- 
+
  This node goes through a dataset in order and waits until all processing is done
  before adding a new message to algorithm
 
@@ -118,7 +118,9 @@ class PoseViewer
         else
         {
             this->myfile.open("pose_out.csv");
-            this->myfile << " p_RS_R_x [m],p_RS_R_y [m],p_RS_R_z [m],q_RS_w [],q_RS_x [], q_RS_y [], q_RS_z [],\n";
+            this->myfile << " p_RS_R_x [m]"<<","<<"p_RS_R_y [m]"<<","
+                         <<"p_RS_R_z [m]"<<","<<"q_RS_w []"<<","<<"q_RS_x []"
+                         <<","<<"q_RS_y []"<<","<<"q_RS_z []"<<std::endl;
         }
 
         iter1_flag = false;
@@ -128,15 +130,16 @@ class PoseViewer
     Eigen::Quaterniond quat = T_WS.q();
     if(EVAL_MODE)
     {
-        this->myfile << /*this->eval_timestamps[this->eval_ts_count]*/ t.toNSec() << "," << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
-                    << "," << quat.x() << "," << quat.y() << "," << quat.z()
-                    << "," << "\n";
+        this->myfile << /*this->eval_timestamps[this->eval_ts_count]*/ t.toNSec()
+                     << "," << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
+                     << "," << quat.x() << "," << quat.y() << "," << quat.z()
+                     << std::endl;
     }
     else
     {
         this->myfile << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
-                    << "," << quat.x() << "," << quat.y() << "," << quat.z()
-                    << "," << "\n";
+                     << "," << quat.x() << "," << quat.y() << "," << quat.z()
+                     << std::endl;
     }
     ++(this->eval_ts_count);
 
