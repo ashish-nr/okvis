@@ -62,6 +62,8 @@
 
 #include <boost/filesystem.hpp>
 
+#define EVAL_MODE 1
+
 class PoseViewer
 {
  public:
@@ -72,6 +74,10 @@ class PoseViewer
   std::ofstream myfile;
   bool iter1_flag=true;
 
+  // DataStructure for eval dataset timestamp
+  std::vector<long> eval_timestamps;
+  size_t eval_ts_count=0;
+  std::string ts_line;
 
   PoseViewer()
   {
@@ -82,7 +88,7 @@ class PoseViewer
   }
   // this we can register as a callback
   void publishFullStateAsCallback(
-      const okvis::Time & /*t*/, const okvis::kinematics::Transformation & T_WS,
+      const okvis::Time & t, const okvis::kinematics::Transformation & T_WS,
       const Eigen::Matrix<double, 9, 1> & speedAndBiases,
       const Eigen::Matrix<double, 3, 1> & /*omega_S*/)
   {
@@ -93,15 +99,46 @@ class PoseViewer
 
     if(iter1_flag)
     {
-        this->myfile.open("pose_out.csv");
-        this->myfile << " p_RS_R_x [m],p_RS_R_y [m],p_RS_R_z [m],q_RS_w [],q_RS_x [], q_RS_y [], q_RS_z [],\n";
+        //read eval timestamps into vector
+        if(EVAL_MODE)
+        {
+            std::ifstream input_ts_file;
+            input_ts_file.open("/home/a/Programming/datasets/V1_02_medium/mav0/cam0/timestamps.txt");
+            if(!input_ts_file)
+            {
+                std::cout<<"Error opening ts file"<< std::endl;
+                while(1);
+            }
+            while(std::getline(input_ts_file, ts_line))
+            {
+                this->eval_timestamps.push_back(std::stol(ts_line));
+            }
+            this->myfile.open("pose_out.csv");
+        }
+        else
+        {
+            this->myfile.open("pose_out.csv");
+            this->myfile << " p_RS_R_x [m],p_RS_R_y [m],p_RS_R_z [m],q_RS_w [],q_RS_x [], q_RS_y [], q_RS_z [],\n";
+        }
+
         iter1_flag = false;
     }
+
     // Write pose per timestamp/iteration
     Eigen::Quaterniond quat = T_WS.q();
-    this->myfile << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
-                 << "," << quat.x() << "," << quat.y() << "," << quat.z()
-                 << "," << "\n";
+    if(EVAL_MODE)
+    {
+        this->myfile << /*this->eval_timestamps[this->eval_ts_count]*/ t.toNSec() << "," << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
+                    << "," << quat.x() << "," << quat.y() << "," << quat.z()
+                    << "," << "\n";
+    }
+    else
+    {
+        this->myfile << r(0) << "," << r(1) << "," << r(2) << "," << quat.w()
+                    << "," << quat.x() << "," << quat.y() << "," << quat.z()
+                    << "," << "\n";
+    }
+    ++(this->eval_ts_count);
 
     _path.push_back(cv::Point2d(r[0], r[1]));
     _heights.push_back(r[2]);
