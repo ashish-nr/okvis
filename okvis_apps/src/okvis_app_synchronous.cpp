@@ -49,6 +49,7 @@
 #include <memory>
 #include <functional>
 #include <atomic>
+#include <chrono>
 
 #include <Eigen/Core>
 
@@ -350,6 +351,7 @@ int main(int argc, char **argv)
   }
 
   int counter = 0;
+  auto eval_start = std::chrono::system_clock::now();
   okvis::Time start(0.0);
   while (true) {
     okvis_estimator.display();
@@ -358,6 +360,12 @@ int main(int argc, char **argv)
     // check if at the end
     for (size_t i = 0; i < numCameras; ++i) {
       if (cam_iterators[i] == image_names[i].end()) {
+        auto eval_end = std::chrono::system_clock::now();
+        auto delta_time = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(eval_end - eval_start).count();
+
+        std::cout << "Elapsed time for 1710 frames: " << delta_time << "ms" << std::endl;
+        std::cout << "Avg Framerate: " << (1710./delta_time) * 1000.0f << std::endl;
+
         std::cout << std::endl << "Finished. Press any key to exit." << std::endl << std::flush;
         cv::waitKey();
         return 0;
